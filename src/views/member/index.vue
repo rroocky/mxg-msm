@@ -50,8 +50,13 @@
             </el-table-column>
             <el-table-column prop="address" label="地址" width="230"></el-table-column>
             <el-table-column label="操作" width="200">
-                <el-button size="medium">编辑</el-button>
-                <el-button type="danger" size="medium">删除</el-button>
+                <template slot-scope="scope">
+                    <el-button size="medium" @click="handleEdit(scope.row.id)">编辑</el-button>
+                    <!-- 弹出框--删除对话框 -->
+                    <el-popconfirm title="这是一段内容确定删除吗？" @onConfirm="handleDelete(scope.row.id)">
+                        <el-button slot="reference" type="danger" size="medium">删除</el-button>
+                    </el-popconfirm>
+                </template>
             </el-table-column>
         </el-table>
         <!-- 分页组件 -->
@@ -69,13 +74,13 @@
         <!-- 对话框--弹出新增窗口 
             :visible=true 的时候显示
         -->
-        <el-dialog title="收货地址" :visible.sync="dialogFormVisible" width="500">
+        <el-dialog title="会员编辑" :visible.sync="dialogFormVisible" width="500px">
             <el-form
-                :model="pojo"
                 label-width="120px"
                 label-position="right"
                 :rules="rules"
                 ref="pojoForm"
+                :model="pojo"
             >
                 <el-form-item label="会员姓名" prop="name">
                     <!-- 当表单的item指定了prop字段名， 那么表单绑定的对象的字段都要有默认值（空也行） -->
@@ -109,7 +114,7 @@
                             v-for="options in payTypeOptions"
                             :key="options.type"
                             :label="options.name"
-                            v-model="options.type"
+                            :value="options.type"
                         ></el-option>
                     </el-select>
                 </el-form-item>
@@ -126,9 +131,14 @@
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="addData('pojoForm')">确 定</el-button>
+                <el-button
+                    type="primary"
+                    @click="pojo.id===null?addData('pojoForm'):updateData('pojoForm')"
+                >确 定</el-button>
             </div>
         </el-dialog>
+    </div>
+</template>
     </div>
 </template>
 
@@ -172,12 +182,13 @@ export default {
                 // 条件查询绑定的条件值
                 //当表单的item指定了prop字段名， 那么表单绑定的对象的字段都要有默认值（空也行）
                 // 否则指定了prop字段名的表单元素输入不了。
+                id: null,
                 name: "",
                 cardNum: "",
                 birthday: "",
                 phone: "",
-                integral: "",
-                money: "",
+                integral: 0,
+                money: 0,
                 payType: "",
                 address: ""
             },
@@ -271,16 +282,71 @@ export default {
                     return false;
                 }
             });
+        },
+
+        handleEdit(id) {
+            //将会员编辑弹出框打开，并清空值
+            this.handleAdd();
+            member.getById(id).then(response => {
+                const resp = response.data;
+                if (resp.flag) {
+                    //处理一下请求来的会员信息的支付类型，数字转汉字
+                    const obj = this.payTypeOptions.find(
+                        obj => obj.type == resp.data.payType
+                    );
+                    resp.data.payType = obj.name;
+                    //将查询到的数据绑定到弹出框
+                    this.pojo = resp.data;
+                }
+            });
+        },
+        //提交修改会员表单
+        updateData(formName) {
+            this.$refs[formName].validate(valid => {
+                if (valid) {
+                    member.update(this.pojo).then(response => {
+                        const resp = response.data;
+                        if (resp.flag) {
+                            this.dialogFormVisible = false;
+                            this.fechData();
+                            this.$message({
+                                message: resp.message,
+                                type: "success"
+                            });
+                        } else {
+                            this.$message({
+                                message: resp.message,
+                                type: "warning"
+                            });
+                        }
+                    });
+                } else {
+                    return false;
+                }
+            });
+        },
+        handleDelete(id) {
+            member.delete(id).then(response => {
+                const resp = response.data;
+                if (resp.flag) {
+                    //刷新列表
+                    this.fechData();
+                    this.$message({
+                        message: resp.message,
+                        type: "success"
+                    });
+                } else {
+                    this.$message({
+                        message: resp.message,
+                        type: "warning"
+                    });
+                }
+            });
         }
     }
 };
 </script>
 
 <style lang="scss" scoped>
-.el-pagination {
-    margin-top: 15px;
-}
-.demo-form-inline {
-    margin-top: 10px;
-}
+
 </style>

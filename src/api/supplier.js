@@ -1,50 +1,48 @@
-import request from '@/utils/request.js';
+import request from '../utils/request'
 
 export default {
-    //获取会员列表
+    //获取列表信息
     getList() {
         return request({
-            url: "/member/list",
+            url: "/supplier/list",
             method: "get"
         })
     },
-    //分页查询
-    //page 当前页码
-    //size 每页条数
-    //searchMap 查询条件
+    //根据条件查询列表信息
     search(page, size, searchMap) {
         return request({
-            url: `/member/list/search/${page}/${size}`,
+            url: `/supplier/list/search/${page}/${size}`,
             method: "post",
             data: searchMap
         })
     },
-    //新增会员
+    //添加供应商
     add(pojo) {
         return request({
-            url: `/member`,
+            url: `/supplier`,
             method: "post",
             data: pojo
         })
     },
-    //查询会员信息
+    //根据id查询供应商
     getById(id) {
         return request({
-            url: `/member/${id}`,
+            url: `/supplier/${id}`,
             method: "get"
         })
     },
-    //修改会员信息
+    //更新供应商信息
     update(pojo) {
         return request({
-            url: `/member/${pojo.id}`,
+            url: `/supplier/${pojo.id}`,
             method: "put",
             data: pojo
         })
     },
+    //删除供应商
     delete(id) {
         return request({
-            url: `/member/${id}`,
+            url: `/supplier/${id}`,
             method: "delete"
         })
     }

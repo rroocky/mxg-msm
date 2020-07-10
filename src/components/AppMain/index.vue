@@ -16,3 +16,13 @@ export default {
 };
 </script>
 
+<style>
+.el-pagination {
+    margin-top: 15px;
+}
+
+.demo-form-inline {
+    margin-top: 10px;
+}
+</style>
+
